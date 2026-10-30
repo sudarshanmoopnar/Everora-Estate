@@ -445,14 +445,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
 
                 const response = await fetch(
-                    "http://127.0.0.1:5000/api/enquiries",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(enquiry)
-                    }
+                    "https://everora-estate.onrender.com/api/enquiries",
+                     {
+                         method: "POST",
+                         headers: {
+                             "Content-Type": "application/json"
+                         },
+                         body: JSON.stringify(enquiry)
+                     }
                 );
 
                 const result = await response.json();
