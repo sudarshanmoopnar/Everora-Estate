@@ -1,7 +1,6 @@
 import os
 import re
-import smtplib
-from email.message import EmailMessage
+import resend
 
 import psycopg
 from dotenv import load_dotenv
@@ -14,8 +13,12 @@ from flask_limiter.util import get_remote_address
 # Load environment variables from the local .env file.
 load_dotenv()
 
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+EMAIL_FROM = os.getenv(
+    "EMAIL_FROM",
+    "Everora Estate <onboarding@resend.dev>",
+)
 
 
 # --------------------------------------------------
@@ -23,16 +26,14 @@ MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 # --------------------------------------------------
 
 def send_enquiry_notification(name, email, event, guests, message):
-    if not MAIL_USERNAME or not MAIL_PASSWORD:
-        raise RuntimeError("Email configuration is missing.")
+    if not RESEND_API_KEY or not MAIL_USERNAME:
+        raise RuntimeError(
+            "Email notification configuration is missing."
+        )
 
-    msg = EmailMessage()
-    msg["Subject"] = f"New Everora Estate Enquiry — {event}"
-    msg["From"] = MAIL_USERNAME
-    msg["To"] = MAIL_USERNAME
+    resend.api_key = RESEND_API_KEY
 
-    msg.set_content(
-        f"""A new enquiry has been submitted on Everora Estate.
+    email_content = f"""A new enquiry has been submitted on Everora Estate.
 
 Name: {name}
 Email: {email}
@@ -42,16 +43,19 @@ Guests: {guests}
 Message:
 {message}
 """
-    )
 
-    with smtplib.SMTP(
-        "smtp.gmail.com",
-        587,
-        timeout=20,
-    ) as server:
-        server.starttls()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.send_message(msg)
+    result = resend.Emails.send({
+        "from": EMAIL_FROM,
+        "to": [MAIL_USERNAME],
+        "subject": f"New Everora Estate Enquiry — {event}",
+        "text": email_content,
+        "reply_to": email,
+    })
+
+    app.logger.info(
+        "Enquiry notification sent through Resend: %s",
+        result["id"],
+    )
 
 
 # --------------------------------------------------
