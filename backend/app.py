@@ -287,10 +287,11 @@ def create_enquiry():
             message,
         )
 
-    except Exception:
-        app.logger.exception(
-            "Enquiry saved, but email notification failed"
-        )
+    except Exception as error:
+    app.logger.exception(
+        "Enquiry saved, but email notification failed: %s",
+        error,
+    )
 
     return jsonify({
         "status": "success",
