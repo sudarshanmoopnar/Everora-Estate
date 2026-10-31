@@ -275,7 +275,6 @@ def create_enquiry():
                 "Please try again later."
             ),
         }), 500
-
     # Send the email after the database transaction completes.
     # An email failure must not undo an already-saved enquiry.
     try:
@@ -288,10 +287,10 @@ def create_enquiry():
         )
 
     except Exception as error:
-    app.logger.exception(
-        "Enquiry saved, but email notification failed: %s",
-        error,
-    )
+        app.logger.exception(
+            "Enquiry saved, but email notification failed: %s",
+            error,
+        )
 
     return jsonify({
         "status": "success",
